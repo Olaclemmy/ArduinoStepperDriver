@@ -1,10 +1,13 @@
-#include <StepDriver.h>
+#include <StepperDriver.h>
 
 STPDRIVER driver1;
 
 void setup(){
+
+  Serial.begin(115200);
+
   //Configure Pins (enable, step, direction)
-  driver1.pinConfig(2,3,4);
+  driver1.pinConfig(8,2,5);
 
   //Configure Enable Mode
   driver1.enable(HIGH);
@@ -15,19 +18,20 @@ void setup(){
   //Define Steps per millimeter
   driver1.stepPerMm(100);
 
-  // Setup Acceleration:  acceleration, minimum, maximum
-  driver1.motionConfig(20,500,5000);
+  // Setup Acceleration:  acceleration value (Must be less than Maximum Speed) , maximum SPEED IN MM/MIN
+  driver1.motionConfig(10,10000);
 
   //Define Endstop pins and mode (min, max, logic level triggered)
-  driver1.endstopConfig(12,13, LOW);
+  // Not Implemented Yet!
+  driver1.endstopConfig(9,9, HIGH);
 
 }
 
 void loop(){
+//  Serial.println("Moving 50mm forward then back");
+  driver1.motorMoveTo(50, true);
 
-  driver1.motorMoveTo(50, HIGH);
-  delay(1000);
-  driver1.motorMoveTo(50, LOW);
-  delay(1000);
+  driver1.motorMoveTo(50, false);
+
 
 }

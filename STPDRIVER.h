@@ -10,15 +10,15 @@ public:
 	void pinConfig(int ena, int stp, int dir);
 	void enable(bool state);
 	void stepPerMm(double steps);
-	void stepPerRound(int steps);
+	void stepPerRotation(int steps);
 	void stepConfig(int s);
 	void endstopConfig(int emin, int emax, bool level);
 	bool canGo(bool direction);
-	void motionConfig(int acceleration, int maxSpeed, int minSpeed);
+	void motionConfig(int acceleration, int maxSpeed);
 	void motorMove(bool direction);
 	void motorMoveTo(double distance, bool direction);
-	void motorMoveRotations(int rounds, bool direction);
-	void motorStop();
+	void motorMoveRotations(int rounds, bool direction, int speed);
+
 
 // Global Variables
 	int ENA;              // Enable Pin
@@ -30,8 +30,8 @@ public:
 	double SPM;           // Steps per MM
 	bool LVL;	      // Limit Switch mode (LOW or HIGH)
 	int ACC;		//Motor acceleration (increase in microseconds at each motor step)
-	int SMIN;		// Minimum motor speed (time in microseconds between motor steps)
-	int SMAX;		// Maximum motor speed (time in microseconds between motor steps) 
+	int MAXSPEED;
+
 };
 
 #endif

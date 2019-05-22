@@ -41,41 +41,10 @@ void STPDRIVER::endstopConfig(int emin, int emax, bool level)
 	pinMode(EMIN, INPUT);
 }
 
-bool STPDRIVER::canGo(bool direction)
-{
 
-	if(LVL) // if: the limit switches activate at a high level
-	{
-
-		if(direction && !digitalRead(EMAX)) //if: it moves positively AND the maximum limit switch is not activated
-			return true;
-
-		if(!direction && !digitalRead(EMIN)) //if: it moves negatively AND the minimum limit switch is not activated
-			return true;
-
-	}
-	else if: //the limit switches activate at a low level
-	{
-
-		if(direction && digitalRead(EMAX)) //if: it moves positively AND the maximum limit switch is not activated
-			return true;
-
-		if(!direction && digitalRead(EMIN)) //if: it moves negatively AND the minimum limit switch is not activated
-			return true;
-
-	}
-		return false;
-
-}
-
-void STPDRIVER::motionConfig(int acceleration, int maxSpeed, int minSpeed){
+void STPDRIVER::motionConfig(int acceleration, int maxSpeed){
 	ACC = acceleration;
-	SMAX = maxSpeed;
-
-	if(minSpeed < maxSpeed) //Minimum speed value can not be less than the maximum speed value
-		SMIN = maxSpeed;
-	else
-		SMIN = minSpeed;
+	MAXSPEED = maxSpeed;
 }
 
 
@@ -83,104 +52,85 @@ void STPDRIVER::motionConfig(int acceleration, int maxSpeed, int minSpeed){
 void STPDRIVER::motorMove(bool direction) // Move 1 step in Direction
 {
 	digitalWrite(DIR, direction);
+  long pulseDelay = 1/(MAXSPEED/1000000) ;
+  Serial.print("Setting Max Speed to ");
+  Serial.print(MAXSPEED);
+  Serial.print(" which is a minimum step pulse of ");
+  Serial.println(pulseDelay);
+	digitalWrite(STP, HIGH);
+	delayMicroseconds(pulseDelay/2);
+	digitalWrite(STP, LOW);
+	delayMicroseconds(pulseDelay/2);
 
-	if(canGo(direction)){
-
-		digitalWrite(STP, HIGH);
-		delayMicroseconds(SMAX/2);
-		digitalWrite(STP, LOW);
-		delayMicroseconds(SMAX/2);
-	}
 }
 
 void STPDRIVER::motorMoveTo(double distance, bool direction) // Move distance in mm, in direction
 {
-
-
 	digitalWrite(DIR, direction);
-	long accSpeed = SMIN;
 
+  int slowestPulse = 5000; // Start with a long pulse
+  long fastestPulse = 1/(((MAXSPEED/60)*SPM)/1000000) ;
+  int pulseLength = slowestPulse; // Start with a long pulse
+  int numOfPulsesToSpeed = (slowestPulse-fastestPulse) / ACC;
+
+  // Serial.print("Setting Max Speed to ");
+  // Serial.print(MAXSPEED);
+  // Serial.print(" which is a minimum step pulse of ");
+  // Serial.print(fastestPulse);
+  // Serial.print(" accel/decel over ");
+  // Serial.print(numOfPulsesToSpeed);
+  // Serial.println(" steps");
+  // Run the move
 	for(long i = 0; i < distance*SPM; i++){
 
-			if(i<(distance*SPM)/2){
-
-				if(accSpeed>SMAX){
-
-					if(canGo(direction)){
-						digitalWrite(STP, HIGH);
-						delayMicroseconds(accSpeed/2);
-						digitalWrite(STP, LOW);
-						delayMicroseconds(accSpeed/2);
-					}
-					else
-						delayMicroseconds(accSpeed);
-				}
-				else
-				{
-					if(canGo(direction)){
-						digitalWrite(STP, HIGH);
-						delayMicroseconds(SMAX/2);
-						digitalWrite(STP, LOW);
-						delayMicroseconds(SMAX/2);
-					}
-					else
-						delayMicroseconds(accSpeed);
-				}
-				accSpeed = accSpeed - ACC;
-
-			}
-			else
-			{
-				if(accSpeed>SMAX){
-
-					if(canGo(direction)){
-						digitalWrite(STP, HIGH);
-						delayMicroseconds(accSpeed/2);
-						digitalWrite(STP, LOW);
-						delayMicroseconds(accSpeed/2);
-					}
-					else
-						delayMicroseconds(accSpeed);
-				}
-				else
-				{
-					if(canGo(direction)){
-						digitalWrite(STP, HIGH);
-						delayMicroseconds(SMAX/2);
-						digitalWrite(STP, LOW);
-						delayMicroseconds(SMAX/2);
-					}
-					else
-						delayMicroseconds(accSpeed);
-				}
-				accSpeed = accSpeed + ACC;
-			}
-
+    // Serial.println(pulseLength);
+    // Start Accelerating
+    if (i < (distance*SPM)/2) {
+      // first half of travel
+      if (i < numOfPulsesToSpeed) {
+        // Serial.println(pulseLength);
+        digitalWrite(STP, HIGH);
+        delayMicroseconds(pulseLength/2);
+        digitalWrite(STP, LOW);
+        delayMicroseconds(pulseLength/2);
+          pulseLength = pulseLength - ACC;
+      } else {
+        // just coasting along...
+        // Serial.println(pulseLength);
+        digitalWrite(STP, HIGH);
+        delayMicroseconds(pulseLength/2);
+        digitalWrite(STP, LOW);
+        delayMicroseconds(pulseLength/2);
+      }
+    } else {
+      if (i > ((distance*SPM)-numOfPulsesToSpeed)) {
+        digitalWrite(STP, HIGH);
+        delayMicroseconds(pulseLength/2);
+        digitalWrite(STP, LOW);
+        delayMicroseconds(pulseLength/2);
+        pulseLength = pulseLength + ACC;
+      } else {
+        // just coasting along...
+        // Serial.println(pulseLength);
+        digitalWrite(STP, HIGH);
+        delayMicroseconds(pulseLength/2);
+        digitalWrite(STP, LOW);
+        delayMicroseconds(pulseLength/2);
+      }
+    }
 	}
 }
 
-void STPDRIVER::motorMoveRotations(int rounds, bool direction)	// move rotations, in direction
+void STPDRIVER::motorMoveRotations(int rounds, bool direction, int speed)	// move rotations, in direction
 {
 	digitalWrite(DIR, direction);
-
+  long fastestPulse = 1/(((speed/60)*SPM)/1000000) ;
 	for(int r = 0; r < rounds; r++){
 		for(int i = 0; i < SPR; i++){
-
-			if(canGo(direction)){
-
 				digitalWrite(STP, HIGH);
-				delayMicroseconds(SMAX/2);
+				delayMicroseconds(fastestPulse/2);
 				digitalWrite(STP, LOW);
-				delayMicroseconds(SMAX/2);
-			}
-			else
-				delayMicroseconds(SMAX);
+				delayMicroseconds(fastestPulse/2);
 		}
 	}
-
-}
-
-void STPDRIVER::motorStop() //Disable Step
-{
-	digitalWrite(STP, LOW);
 }
