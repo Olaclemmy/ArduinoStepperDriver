@@ -15,8 +15,8 @@ public:
 	void endstopConfig(int emin, int emax, bool level);
 	bool canGo(bool direction);
 	void motionConfig(int acceleration, int maxSpeed);
-	void motorMove(bool direction);
-	void motorMoveTo(double distance, bool direction);
+	void motorMoveStep(bool direction);
+	void motorMove(double distance);
 	void motorMoveRotations(int rounds, bool direction, int speed);
 
 

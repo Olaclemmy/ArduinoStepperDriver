@@ -27,8 +27,8 @@ void setup(){
 
 void loop(){
   //Moving 50mm forward then back
-  driver1.motorMoveTo(50, true);
-  driver1.motorMoveTo(50, false);
+  driver1.motorMove(50);
+  driver1.motorMove(-50);
 
   // spin 10 rotations one way then 10 rotations back
   driver1.motorMoveRotations(10, true, 2000);

@@ -49,7 +49,7 @@ void STPDRIVER::motionConfig(int acceleration, int maxSpeed){
 
 
 
-void STPDRIVER::motorMove(bool direction) // Move 1 step in Direction
+void STPDRIVER::motorMoveStep(bool direction) // Move 1 step in Direction
 {
 	digitalWrite(DIR, direction);
   long pulseDelay = 1/(MAXSPEED/1000000) ;
@@ -64,9 +64,18 @@ void STPDRIVER::motorMove(bool direction) // Move 1 step in Direction
 
 }
 
-void STPDRIVER::motorMoveTo(double distance, bool direction) // Move distance in mm, in direction
+void STPDRIVER::motorMove(double distance) // Move distance in mm, in direction
 {
-	digitalWrite(DIR, direction);
+
+
+  if (distance < 0) {
+    distance = distance * -1;
+    // Serial.println("Negative");
+    digitalWrite(DIR, LOW);
+  } else {
+    // Serial.println("Positive");
+    digitalWrite(DIR, HIGH);
+  }
 
   int slowestPulse = 5000; // Start with a long pulse
   long fastestPulse = 1/(((MAXSPEED/60)*SPM)/1000000) ;

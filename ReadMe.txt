@@ -24,12 +24,11 @@ void motionConfig(int acceleration, int maxSpeed, );
 /* Moves the motor in 1 step, with delay between steps based on the variable SMAX (maximum motor speed, set in the "motionConfig" function)
 Usually used in closed loops for continuous motor movement
 direction: motor direction (true or false) */
-void motorMove(bool direction);
+void motorMoveStep(bool direction);
 
 /* Moves the motor a distance in millimeters, with acceleration and deceleration
-distance: distance in millimeters
-direction: motor direction (true or false) */
-void motorMoveTo(double distance, bool direction);
+distance: distance in millimeters (negative to reverse)
+void motorMove(double distance);
 
 /* Moves the motor an amount of turns, taking into account the number of steps per rotation
 rounds: number of whole turns
