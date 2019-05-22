@@ -61,10 +61,12 @@ void STPDRIVER::motorMoveStep(bool direction) // Move 1 step in Direction
 
 }
 
-void STPDRIVER::motorMove(double distance) // Move distance in mm, in direction
+void STPDRIVER::motorMove(double distance, int speed) // Move distance in mm, in direction
 {
 
-
+  if (speed > MAXSPEED) {
+    speed = MAXSPEED;
+  }
   if (distance < 0) {
     distance = distance * -1;
     // Serial.println("Negative");
@@ -75,7 +77,7 @@ void STPDRIVER::motorMove(double distance) // Move distance in mm, in direction
   }
 
   int slowestPulse = 5000; // Start with a long pulse
-  long fastestPulse = 1/(((MAXSPEED/60)*SPM)/1000000) ;
+  long fastestPulse = 1/(((speed/60)*SPM)/1000000) ;
   int pulseLength = slowestPulse; // Start with a long pulse
   int numOfPulsesToSpeed = (slowestPulse-fastestPulse) / ACC;
 
@@ -127,9 +129,18 @@ void STPDRIVER::motorMove(double distance) // Move distance in mm, in direction
 	}
 }
 
-void STPDRIVER::motorMoveRotations(int rounds, bool direction, int speed)	// move rotations, in direction
+void STPDRIVER::motorMoveRotations(int rounds, int speed)	// move rotations, in direction
 {
-	digitalWrite(DIR, direction);
+
+  if (rounds < 0) {
+    rounds = rounds * -1;
+    // Serial.println("Negative");
+    digitalWrite(DIR, LOW);
+  } else {
+    // Serial.println("Positive");
+    digitalWrite(DIR, HIGH);
+  }
+
   long fastestPulse = 1/(((speed/60)*SPM)/1000000) ;
 	for(int r = 0; r < rounds; r++){
 		for(int i = 0; i < SPR; i++){

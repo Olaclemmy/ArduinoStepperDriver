@@ -15,8 +15,8 @@ public:
 	bool canGo(bool direction);
 	void motionConfig(int acceleration, int maxSpeed);
 	void motorMoveStep(bool direction);
-	void motorMove(double distance);
-	void motorMoveRotations(int rounds, bool direction, int speed);
+	void motorMove(double distance, int speed);
+	void motorMoveRotations(int rounds,  int speed);
 
 
 // Global Variables
