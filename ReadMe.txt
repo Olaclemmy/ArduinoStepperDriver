@@ -1,6 +1,4 @@
 
-/* Configure Driver Pinout*/
-void pinConfig(int ena, int stp, int dir);
 
 /* Enable Driver (true or false) */
 void enable(bool state);

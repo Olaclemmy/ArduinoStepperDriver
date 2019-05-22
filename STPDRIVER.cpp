@@ -1,18 +1,15 @@
 #include "STPDRIVER.h"
 
-STPDRIVER::STPDRIVER(){
-}
+STPDRIVER::STPDRIVER(int ena, int stp, int dir){
+  ENA = ena;			//Enable Pin
+  STP = stp;			//Step Pin
+  DIR = dir;      //Dir Pin
 
-void STPDRIVER::pinConfig(int ena, int stp, int dir){
+  //Define PinModes
+  pinMode(ENA, OUTPUT);
+  pinMode(DIR, OUTPUT);
+  pinMode(STP, OUTPUT);
 
-    ENA = ena;			//Enable Pin
-    STP = stp;			//Step Pin
-    DIR = dir;      //Dir Pin
-
-	  //Define PinModes
-    pinMode(ENA, OUTPUT);
-    pinMode(DIR, OUTPUT);
-    pinMode(STP, OUTPUT);
 }
 
 

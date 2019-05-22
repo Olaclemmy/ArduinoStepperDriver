@@ -5,9 +5,8 @@
 
 class STPDRIVER{
 public:
-	STPDRIVER();
+	STPDRIVER(int ena, int stp, int dir);
 
-	void pinConfig(int ena, int stp, int dir);
 	void enable(bool state);
 	void stepPerMm(double steps);
 	void stepPerRotation(int steps);
