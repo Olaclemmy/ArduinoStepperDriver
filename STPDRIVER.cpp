@@ -1,59 +1,43 @@
 #include "STPDRIVER.h"
 
-STPDRIVER::STPDRIVER(int ena, int stp, int dir){
-  ENA = ena;			//Enable Pin
-  STP = stp;			//Step Pin
-  DIR = dir;      //Dir Pin
 
-  //Define PinModes
+STPDRIVER::STPDRIVER(int stp, int dir, int ena, int enaval, int emin, int emax, bool limitval, double stepsPerMM, int stepsPerRotation, int acceleration, int maxSpeed){
+  STP = stp;                //Step Pin
+  DIR = dir;                //Dir Pin
+  ENA = ena;                //Enable Pin
+  ENAVAL = enaval;          // Enable active Low/High
+  EMIN = emin;              // Min Endstop Pin
+  EMAX = emax;              // Max Endstop Pin
+	LIMITVAL  = limitval;     // Endstop active low/high
+  SPM = stepsPerMM;         // Steps per MM (for mm linear motion)
+  SPR = stepsPerRotation;   // Steps per Rotation (for RPM and Rotation use cases)
+  ACC = acceleration;       // Acceleration arbitrary value
+  MAXSPEED = maxSpeed;      // Maximum feedrate in mm/min
+  pinMode(EMAX, INPUT);
+	pinMode(EMIN, INPUT);
   pinMode(ENA, OUTPUT);
   pinMode(DIR, OUTPUT);
   pinMode(STP, OUTPUT);
-
 }
 
 
-void STPDRIVER::enable(bool state)
+void STPDRIVER::enable()
 {
-	digitalWrite(ENA, !state);// Activates and deactivates the STPDRIVER chip (FALSE = active, TRUE = deactivates)
+	digitalWrite(ENA, ENAVAL);// Activates and deactivates the STPDRIVER chip
 	delay (10);               // Delay 10 milliseconds
 }
 
-void STPDRIVER::stepPerMm(double steps)
+void STPDRIVER::disable()
 {
-	SPM = steps;
+	digitalWrite(ENA, !ENAVAL);// Activates and deactivates the STPDRIVER chip
+	delay (10);               // Delay 10 milliseconds
 }
-
-void STPDRIVER::stepPerRotation(int steps)
-{
-	SPR = steps;
-}
-
-void STPDRIVER::endstopConfig(int emin, int emax, bool level)
-{
-	EMAX = emax;
-	EMIN = emin;
-	LVL  = level;
-	pinMode(EMAX, INPUT);
-	pinMode(EMIN, INPUT);
-}
-
-
-void STPDRIVER::motionConfig(int acceleration, int maxSpeed){
-	ACC = acceleration;
-	MAXSPEED = maxSpeed;
-}
-
 
 
 void STPDRIVER::motorMoveStep(bool direction) // Move 1 step in Direction
 {
 	digitalWrite(DIR, direction);
   long pulseDelay = 1/(MAXSPEED/1000000) ;
-  Serial.print("Setting Max Speed to ");
-  Serial.print(MAXSPEED);
-  Serial.print(" which is a minimum step pulse of ");
-  Serial.println(pulseDelay);
 	digitalWrite(STP, HIGH);
 	delayMicroseconds(pulseDelay/2);
 	digitalWrite(STP, LOW);
@@ -69,10 +53,8 @@ void STPDRIVER::motorMove(double distance, int speed) // Move distance in mm, in
   }
   if (distance < 0) {
     distance = distance * -1;
-    // Serial.println("Negative");
     digitalWrite(DIR, LOW);
   } else {
-    // Serial.println("Positive");
     digitalWrite(DIR, HIGH);
   }
 
@@ -81,22 +63,13 @@ void STPDRIVER::motorMove(double distance, int speed) // Move distance in mm, in
   int pulseLength = slowestPulse; // Start with a long pulse
   int numOfPulsesToSpeed = (slowestPulse-fastestPulse) / ACC;
 
-  // Serial.print("Setting Max Speed to ");
-  // Serial.print(MAXSPEED);
-  // Serial.print(" which is a minimum step pulse of ");
-  // Serial.print(fastestPulse);
-  // Serial.print(" accel/decel over ");
-  // Serial.print(numOfPulsesToSpeed);
-  // Serial.println(" steps");
   // Run the move
 	for(long i = 0; i < distance*SPM; i++){
 
-    // Serial.println(pulseLength);
     // Start Accelerating
     if (i < (distance*SPM)/2) {
       // first half of travel
       if (i < numOfPulsesToSpeed) {
-        // Serial.println(pulseLength);
         digitalWrite(STP, HIGH);
         delayMicroseconds(pulseLength/2);
         digitalWrite(STP, LOW);
@@ -104,7 +77,6 @@ void STPDRIVER::motorMove(double distance, int speed) // Move distance in mm, in
           pulseLength = pulseLength - ACC;
       } else {
         // just coasting along...
-        // Serial.println(pulseLength);
         digitalWrite(STP, HIGH);
         delayMicroseconds(pulseLength/2);
         digitalWrite(STP, LOW);
@@ -112,6 +84,7 @@ void STPDRIVER::motorMove(double distance, int speed) // Move distance in mm, in
       }
     } else {
       if (i > ((distance*SPM)-numOfPulsesToSpeed)) {
+        // Decelerate
         digitalWrite(STP, HIGH);
         delayMicroseconds(pulseLength/2);
         digitalWrite(STP, LOW);
@@ -119,7 +92,6 @@ void STPDRIVER::motorMove(double distance, int speed) // Move distance in mm, in
         pulseLength = pulseLength + ACC;
       } else {
         // just coasting along...
-        // Serial.println(pulseLength);
         digitalWrite(STP, HIGH);
         delayMicroseconds(pulseLength/2);
         digitalWrite(STP, LOW);
@@ -131,13 +103,10 @@ void STPDRIVER::motorMove(double distance, int speed) // Move distance in mm, in
 
 void STPDRIVER::motorMoveRotations(int rounds, int speed)	// move rotations, in direction
 {
-
   if (rounds < 0) {
     rounds = rounds * -1;
-    // Serial.println("Negative");
     digitalWrite(DIR, LOW);
   } else {
-    // Serial.println("Positive");
     digitalWrite(DIR, HIGH);
   }
 

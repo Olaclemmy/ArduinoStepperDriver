@@ -1,38 +1,34 @@
 #include <StepperDriver.h>
 
-//Create Instance and Assign Pins (enable, step, direction)
-STPDRIVER driver1(8,2,5);
+//Create Instance and Assign Pins (int stp, int dir, int ena, int enaval, int emin, int emax, bool limitval, double stepsPerMM, int stepsPerRotation, int acceleration, int maxSpeed)
+STPDRIVER driver1(
+  2,    // Step Pin
+  5,    // Dir Pin
+  8,    // Enable Pin
+  LOW,  // Enable Active (LOW/HIGH)
+  9,    // Min Endstop
+  9,    // Max Endstop
+  HIGH, // Endstops trigger when
+  200,  // Steps per mm
+  3200, // Steps per Rotation
+  100,  // Acceleration Value
+  5000  // Maximum Speed (mm/min)
+);
 
 void setup(){
-
   Serial.begin(115200);
-
-  //Configure Enable Mode
-  driver1.enable(HIGH);
-
-  //Define Steps per Rotation
-  driver1.stepPerRotation(200);
-
-  //Define Steps per millimeter
-  driver1.stepPerMm(100);
-
-  // Setup Acceleration:  acceleration , maximum SPEED IN MM/MIN
-  driver1.motionConfig(10,5000);
-
-  //Define Endstop pins and mode (min, max, logic level triggered)
-  //Not Implemented Yet!
-  driver1.endstopConfig(9,9, HIGH);
-
 }
 
 void loop(){
+  driver1.enable();
   //Moving 50mm forward then back
-  driver1.motorMove(50, 2000);
+  driver1.motorMove(50, 5000);
   driver1.motorMove(-50, 5000);
 
   // spin 10 rotations one way then 10 rotations back
-  driver1.motorMoveRotations(10, 2000);
-  driver1.motorMoveRotations(-10, 5000);
-
+  driver1.motorMoveRotations(5, 5000);
+  driver1.motorMoveRotations(-5, 5000);
+  driver1.disable();
+  delay(500);
 
 }

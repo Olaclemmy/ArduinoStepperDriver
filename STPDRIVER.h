@@ -5,32 +5,24 @@
 
 class STPDRIVER{
 public:
-	STPDRIVER(int ena, int stp, int dir);
-
-	void enable(bool state);
-	void stepPerMm(double steps);
-	void stepPerRotation(int steps);
-	void stepConfig(int s);
-	void endstopConfig(int emin, int emax, bool level);
-	bool canGo(bool direction);
-	void motionConfig(int acceleration, int maxSpeed);
+	STPDRIVER(int stp, int dir, int ena, int enaval, int emin, int emax, bool limitval, double stepsPerMM, int stepsPerRotation, int acceleration, int maxSpeed);
+	void enable();
+	void disable();
 	void motorMoveStep(bool direction);
 	void motorMove(double distance, int speed);
 	void motorMoveRotations(int rounds,  int speed);
-
-
-// Global Variables
-	int ENA;              // Enable Pin
-	int DIR;              // Dir Pin
-	int STP;              // Step Pin
-	int SPR;	      // Steps per Rotation
-	int EMAX;	      // MAX Endstop Pin
-	int EMIN;	      // MIN Endstop Pin
-	double SPM;           // Steps per MM
-	bool LVL;	      // Limit Switch mode (LOW or HIGH)
-	int ACC;		//Motor acceleration (increase in microseconds at each motor step)
-	int MAXSPEED;
-
+	// Global Variables
+	int STP;       // Step Pin
+	int DIR;       // Dir Pin
+	int ENA;       // Enable Pin
+	int ENAVAL;		 // // Enable active Low/High
+	int EMIN;	     // MIN Endstop Pin
+	int EMAX;	     // MAX Endstop Pin
+	int LIMITVAL;	 // Endstop active low/high
+	double SPM;    // Steps per MM
+	int SPR;	     // Steps per Rotation
+	int ACC;			 // Motor acceleration (larger = faster)
+	int MAXSPEED;  // Max feed in mm/min
 };
 
 #endif
